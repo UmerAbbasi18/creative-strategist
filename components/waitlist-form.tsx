@@ -4,7 +4,19 @@ import { FormEvent, useState } from "react";
 
 type SubmitState = "idle" | "loading" | "success" | "error";
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isValidEmail(email: string) {
+  if (email.length > 254) return false;
+
+  const atIndex = email.indexOf("@");
+  if (atIndex <= 0 || atIndex !== email.lastIndexOf("@")) return false;
+
+  const local = email.slice(0, atIndex);
+  const domain = email.slice(atIndex + 1);
+  if (!local || !domain) return false;
+  if (domain.startsWith(".") || domain.endsWith(".") || !domain.includes(".")) return false;
+
+  return true;
+}
 
 export default function WaitlistForm() {
   const [email, setEmail] = useState("");
@@ -16,7 +28,7 @@ export default function WaitlistForm() {
 
     const trimmedEmail = email.trim();
 
-    if (!EMAIL_PATTERN.test(trimmedEmail)) {
+    if (!isValidEmail(trimmedEmail)) {
       setState("error");
       setMessage("Please enter a valid email address.");
       return;

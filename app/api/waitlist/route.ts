@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server";
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isValidEmail(email: string) {
+  if (email.length > 254) return false;
+
+  const atIndex = email.indexOf("@");
+  if (atIndex <= 0 || atIndex !== email.lastIndexOf("@")) return false;
+
+  const local = email.slice(0, atIndex);
+  const domain = email.slice(atIndex + 1);
+  if (!local || !domain) return false;
+  if (domain.startsWith(".") || domain.endsWith(".") || !domain.includes(".")) return false;
+
+  return true;
+}
 
 function getMailchimpConfig() {
   const apiKey = process.env.MAILCHIMP_API_KEY;
@@ -18,7 +30,7 @@ export async function POST(request: Request) {
   try {
     const { email } = (await request.json()) as { email?: string };
 
-    if (!email || !EMAIL_PATTERN.test(email.trim())) {
+    if (!email || !isValidEmail(email.trim())) {
       return NextResponse.json(
         { message: "Please provide a valid email address." },
         { status: 400 }
